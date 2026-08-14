@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('blog')).filter((p) => !p.data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const allPosts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const idx = allPosts.findIndex((p) => p.id === post.id);
+const prevPost = idx > 0 ? allPosts[idx - 1] : undefined;
+const nextPost = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
+---
+
+<PostLayout post={post}>
+  <Content />
+  <nav
+    class="mt-14 flex items-center justify-between gap-4 border-t border-slate-200 pt-6 text-sm dark:border-slate-800"
+  >
+    {
+      nextPost ? (
+        <a href={'/blog/' + nextPost.id + '/'} class="max-w-[45%] text-accent transition-colors hover:text-accent/70">
+          ← 较新<br /><span class="line-clamp-1">{nextPost.data.title}</span>
+        </a>
+      ) : <span />
+    }
+    {
+      prevPost ? (
+        <a href={'/blog/' + prevPost.id + '/'} class="max-w-[45%] text-right text-accent transition-colors hover:text-accent/70">
+          较旧 →<br /><span class="line-clamp-1">{prevPost.data.title}</span>
+        </a>
+      ) : <span />
+    }
+  </nav>
+</PostLayout>

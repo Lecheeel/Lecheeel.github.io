@@ -1,0 +1,20 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer
+  class="border-t border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-500"
+>
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5">
+    <div class="flex items-center justify-center gap-5">
+      <a href="https://github.com/Lecheeel" target="_blank" rel="noopener" class="transition-colors hover:text-accent">GitHub</a>
+      <a href="/rss.xml" class="transition-colors hover:text-accent">RSS</a>
+      <a href="mailto:ryancuee@gmail.com" class="transition-colors hover:text-accent">Email</a>
+    </div>
+    <p>
+      © {year} Lecheeel · 用
+      <a href="https://astro.build" target="_blank" rel="noopener" class="transition-colors hover:text-accent">Astro 7</a>
+      + Tailwind 4 构建 · 托管于 GitHub Pages
+    </p>
+  </div>
+</footer>

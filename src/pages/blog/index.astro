@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+---
+
+<Base title="博客 · Lecheeel" description="Lecheeel 的技术博客文章列表">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">博客</h1>
+  <p class="mt-2 text-slate-500 dark:text-slate-400">记录技术学习、项目实践与思考。</p>
+  <ul class="mt-10 space-y-6">
+    {
+      posts.map((p) => (
+        <li class="border-b border-slate-100 pb-6 dark:border-slate-800">
+          <a href={'/blog/' + p.id + '/'} class="group block">
+            <h2 class="text-lg font-semibold text-slate-900 transition-colors group-hover:text-accent dark:text-white">
+              {p.data.title}
+            </h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{p.data.description}</p>
+            <div class="mt-2 flex items-center gap-3 text-xs text-slate-400">
+              <time datetime={p.data.pubDate.toISOString()}>
+                {p.data.pubDate.toLocaleDateString('zh-CN')}
+              </time>
+              {
+                p.data.tags.map((t) => <span>#{t}</span>)
+              }
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

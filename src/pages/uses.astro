@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+const [uses] = await getCollection('pages', (p) => p.id === 'uses');
+const { Content } = await render(uses);
+---
+
+<Base title={uses.data.title + ' · Lecheeel'} description={uses.data.description}>
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{uses.data.title}</h1>
+  <div class="prose prose-slate mt-8 max-w-none dark:prose-invert">
+    <Content />
+  </div>
+</Base>
