@@ -27,27 +27,36 @@ const jsonLd = JSON.stringify({
 >
   <script is:inline type="application/ld+json" set:html={jsonLd} />
 
-  <section class="flex items-center gap-5 py-2">
-    <img
-      src="/avatar.svg"
-      alt=""
-      width="72"
-      height="72"
-      class="h-18 w-18 shrink-0 rounded-2xl"
-    />
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-        Lecheeel
-      </h1>
-      <p class="mt-1.5 font-mono text-sm text-slate-500 dark:text-slate-400">
-        developer · writer · builder
-      </p>
-    </div>
-  </section>
+  <section class="py-2">
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+      Lecheeel
+    </h1>
+    <p class="mt-8 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+      hi! i'm lecheeel.
+    </p>
+    <p class="mt-4 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+      i like building things and making them stay built.
+      this site ships itself — i just push.
+    </p>
 
-  <p class="mt-10 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
-    在这里写一些关于构建、学习与思考的东西。不多，但都经过思考。
-  </p>
+    <p class="mt-10 font-semibold text-slate-700 dark:text-slate-300">
+      things i believe in:
+    </p>
+    <ul class="mt-2 space-y-1 text-slate-600 dark:text-slate-400">
+      <li>write things down</li>
+      <li>good defaults beat good intentions</li>
+      <li>boring tech, interesting problems</li>
+      <li>automation is a hobby, not a job</li>
+    </ul>
+
+    <p class="mt-10 font-semibold text-slate-700 dark:text-slate-300">
+      things i like:
+    </p>
+    <p class="mt-2 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+      pnpm, github actions, astro, tailwind, oklch, dark mode, 4k screens, rss,
+      terminal, midnight commits, cold brew, ...
+    </p>
+  </section>
 
   <section class="mt-14">
     <div class="mb-4 flex items-baseline justify-between">

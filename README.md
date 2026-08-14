@@ -1,24 +1,10 @@
 # Lecheeel
 
-> less, but better.
+hi! i'm lecheeel.
 
-```sh
-$ whoami
-lecheeel
-
-$ ls ~
-blog/  projects/  about/  now/  uses/
-
-$ cat now.md
-building things, writing about them
-```
-
-## links
+this repo is my little corner of the internet.
+the site deploys itself — i just push.
 
 - site — <https://lecheeel.github.io>
 - feed — <https://lecheeel.github.io/rss.xml>
 - mail — ryancuee@gmail.com
-
----
-
-<sub>written by hand, maintained by bots.</sub>
