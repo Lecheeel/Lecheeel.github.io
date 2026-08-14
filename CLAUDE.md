@@ -1,3 +1,19 @@
+This project has a full guide in `AGENTS.md` — read it before changing
+anything. It contains the site's design philosophy and architecture
+decisions.
+
+## Design Philosophy (summary)
+
+- **Understated.** No badges, no emoji salads, no hype. Restraint is the
+  brand.
+- **Natural voice.** Homepage/README: short lowercase sentences, like a
+  person wrote them ("hi! i'm lecheeel.").
+- **Signals over claims.** Concrete nouns (oklch, pnpm) and insider
+  phrases, never adjectives like "expert".
+- **Content is the proof.** Blog posts and projects carry substance.
+- **Boring tech, interesting problems.** Stable tools; novelty in content.
+- **Specificity.** Lists must contain real, concrete items.
+
 ## Development
 
 When starting the dev server, use background mode:
@@ -6,7 +22,8 @@ When starting the dev server, use background mode:
 astro dev --background
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Manage the background server with `astro dev stop`, `astro dev status`, and
+`astro dev logs`.
 
 ## Documentation
 
