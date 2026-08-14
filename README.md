@@ -8,3 +8,5 @@ the site deploys itself — i just push.
 - site — <https://lecheeel.github.io>
 - feed — <https://lecheeel.github.io/rss.xml>
 - mail — ryancuee@gmail.com
+
+<sub>built with astro · tailwind · deployed by github actions</sub>
