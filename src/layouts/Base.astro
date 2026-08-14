@@ -40,7 +40,7 @@ const canonical = new URL(Astro.url.pathname, SITE);
     <meta name="twitter:card" content="summary" />
     <ClientRouter />
     <script is:inline>
-      // 防 FOUC：优先用户选择，其次系统偏好
+      // 防 FOUC（仅首屏）：优先用户选择，其次系统偏好
       (function () {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -48,6 +48,30 @@ const canonical = new URL(Astro.url.pathname, SITE);
           document.documentElement.classList.add('dark');
         }
       })();
+    </script>
+    <script>
+      // View Transitions 导航后 <html> 的 class 会被新页面重置，
+      // 所以监听 astro:page-load（首屏 + 每次导航）重新应用主题
+      const applyTheme = () => {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle(
+          'dark',
+          stored === 'dark' || (!stored && prefersDark),
+        );
+      };
+
+      document.addEventListener('astro:page-load', applyTheme);
+      applyTheme();
+
+      // 主题切换按钮：事件委托，导航后新 DOM 依然生效
+      document.addEventListener('click', (event) => {
+        const target = event.target as Element;
+        if (!target.closest('#theme-toggle')) return;
+        const root = document.documentElement;
+        const isDark = root.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
     </script>
   </head>
   <body
