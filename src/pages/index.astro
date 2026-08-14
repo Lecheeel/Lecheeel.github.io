@@ -22,33 +22,37 @@ const jsonLd = JSON.stringify({
 ---
 
 <Base
-  title="Lecheeel — 开发者个人主页"
-  description="Lecheeel 的个人主页：技术笔记、开源项目与生活分享。Astro 7 + Tailwind 4 构建。"
+  title="Lecheeel"
+  description="Lecheeel — developer, writer, builder."
 >
   <script is:inline type="application/ld+json" set:html={jsonLd} />
 
-  <section class="flex items-center gap-6">
+  <section class="flex items-center gap-5 py-2">
     <img
       src="/avatar.svg"
-      alt="Lecheeel 头像"
-      width="96"
-      height="96"
-      class="h-24 w-24 shrink-0 rounded-3xl shadow-lg"
+      alt=""
+      width="72"
+      height="72"
+      class="h-18 w-18 shrink-0 rounded-2xl"
     />
     <div>
-      <h1 class="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-        Hi, I'm Lecheeel <span class="inline-block animate-pulse">👋</span>
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+        Lecheeel
       </h1>
-      <p class="mt-2 text-slate-600 dark:text-slate-400">
-        开发者 · 技术爱好者 · 拥抱前沿技术
+      <p class="mt-1.5 font-mono text-sm text-slate-500 dark:text-slate-400">
+        developer · writer · builder
       </p>
     </div>
   </section>
 
+  <p class="mt-10 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+    在这里写一些关于构建、学习与思考的东西。不多，但都经过思考。
+  </p>
+
   <section class="mt-14">
     <div class="mb-4 flex items-baseline justify-between">
-      <h2 class="text-xl font-semibold text-slate-900 dark:text-white">最新文章</h2>
-      <a href="/blog/" class="text-sm text-accent transition-colors hover:text-accent/70">查看全部 →</a>
+      <h2 class="font-mono text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">writing</h2>
+      <a href="/blog/" class="font-mono text-xs text-accent transition-colors hover:text-accent/70">all →</a>
     </div>
     <ul class="space-y-4">
       {
@@ -74,8 +78,8 @@ const jsonLd = JSON.stringify({
 
   <section class="mt-14">
     <div class="mb-4 flex items-baseline justify-between">
-      <h2 class="text-xl font-semibold text-slate-900 dark:text-white">精选项目</h2>
-      <a href="/projects/" class="text-sm text-accent transition-colors hover:text-accent/70">查看全部 →</a>
+      <h2 class="font-mono text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">projects</h2>
+      <a href="/projects/" class="font-mono text-xs text-accent transition-colors hover:text-accent/70">all →</a>
     </div>
     <div class="grid gap-4 sm:grid-cols-2">
       {
