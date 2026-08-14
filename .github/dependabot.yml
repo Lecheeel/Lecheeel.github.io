@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # npm 依赖：每天检查，按组聚合 PR，减少打扰
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    groups:
+      astro:
+        patterns: ["astro*", "@astrojs/*"]
+      tailwind:
+        patterns: ["tailwindcss", "@tailwindcss/*"]
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
+
+  # GitHub Actions：每周检查，防止 action 版本过时
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "ci"]
