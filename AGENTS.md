@@ -1,21 +1,31 @@
 # Lecheeel.github.io — Project Guide
 
-Personal website of Lecheeel — Astro 7 + Tailwind 4, deployed via GitHub
-Pages + GitHub Actions.
+Personal website of Lecheeel — a static site that ships itself. Astro +
+GitHub Pages + GitHub Actions.
 
 ## Principles (read before changing anything)
 
 1. **Bleeding edge, always.** This site intentionally runs the newest
    stable versions of everything — framework, tooling, actions. Follow the
    latest, migrate early, keep Dependabot and auto-merge enabled.
-2. **Understated.** No tech-stack badges, no emoji salads, no
-   "Hi, I'm X 👋" heroes. Restraint is the brand.
-3. **Natural voice.** Homepage/README: short lowercase sentences, like a
-   person wrote them.
-4. **Signals over claims.** Concrete nouns (oklch, pnpm) and insider
-   phrases, never adjectives like "expert".
-5. **Content is the proof.** Blog posts and projects carry the substance.
-6. **Specificity.** Lists must contain real items, no filler.
+2. **Understated.** No tech-stack badges, no "powered by" footers, no
+   emoji salads, no "Hi, I'm X 👋" heroes. Restraint is the brand. The
+   audience is people who know — flexing the stack is how you lose them.
+3. **English only.** All visible content is English. No translations, no
+   mixed-language pages. (`<html lang="en">`.)
+4. **Natural voice.** Homepage/README/blog: short lowercase sentences,
+   like a person wrote them. Never marketing voice, never tutorial voice.
+5. **Signals over claims.** Concrete nouns (oklch, pnpm, 1.6GB) and
+   insider specifics, never adjectives like "expert" or "passionate".
+6. **Content is the proof.** Blog posts and projects carry the substance.
+   No self-promotion; let the writing do it.
+7. **Information density > volume.** Posts exist because something
+   surprised the author: a bug, a decision, a number. No tutorials, no
+   hot takes, no filler.
+8. **Typography is detail.** Fonts are a system stack (no webfonts — the
+   site should load like a file), antialiased, ligatures on, tabular
+   figures for dates. Keep the reading width tight (~max-w-2xl).
+9. **Specificity.** Lists must contain real items, no filler.
 
 ## Architecture (do not casually revert)
 
@@ -36,14 +46,18 @@ Pages + GitHub Actions.
 ## Content
 
 - Blog: `src/content/blog/*.md` — frontmatter: title, description,
-  pubDate, tags (`draft: true` hides). Honest tone, no hype; Chinese is
-  fine.
+  pubDate, tags (`draft: true` hides). English only. Write about what
+  surprised you; include real numbers; skip the intro paragraphs.
 - Projects: `src/content/projects/*.md` (`featured: true` → homepage).
-- Single pages: `src/content/pages/*.md` (now, uses).
+  One honest sentence about what it does and why it exists. Stack field
+  stays minimal or empty — no flexing.
+- Single pages: `src/content/pages/*.md` (now, uses). Keep them current;
+  they're what people check first.
 
 ## Development
 
 Start the dev server in background mode: `astro dev --background`.
 Manage it with `astro dev stop`, `astro dev status`, `astro dev logs`.
+Build check before pushing: `pnpm build`.
 
 Docs: https://docs.astro.build
