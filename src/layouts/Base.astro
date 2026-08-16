@@ -13,7 +13,7 @@ interface Props {
 
 const {
   title,
-  description = 'Lecheeel 的个人主页 — 技术笔记、开源项目与生活分享',
+  description = 'Lecheeel — developer, writer, builder.',
   image = '/avatar.svg',
   type = 'website',
 } = Astro.props;
@@ -22,7 +22,7 @@ const canonical = new URL(Astro.url.pathname, SITE);
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -40,7 +40,7 @@ const canonical = new URL(Astro.url.pathname, SITE);
     <meta name="twitter:card" content="summary" />
     <ClientRouter />
     <script is:inline>
-      // 防 FOUC（仅首屏）：优先用户选择，其次系统偏好
+      // prevent FOUC on first paint: user choice wins, else system pref
       (function () {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -50,8 +50,8 @@ const canonical = new URL(Astro.url.pathname, SITE);
       })();
     </script>
     <script>
-      // View Transitions 导航后 <html> 的 class 会被新页面重置，
-      // 所以监听 astro:page-load（首屏 + 每次导航）重新应用主题
+      // <html> class is reset on view-transition navigation,
+      // so re-apply the theme on astro:page-load (first paint + every nav)
       const applyTheme = () => {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -64,7 +64,7 @@ const canonical = new URL(Astro.url.pathname, SITE);
       document.addEventListener('astro:page-load', applyTheme);
       applyTheme();
 
-      // 主题切换按钮：事件委托，导航后新 DOM 依然生效
+      // theme toggle: event delegation survives navigation
       document.addEventListener('click', (event) => {
         const target = event.target as Element;
         if (!target.closest('#theme-toggle')) return;
@@ -78,7 +78,7 @@ const canonical = new URL(Astro.url.pathname, SITE);
     class="bg-white text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200"
   >
     <Header />
-    <main class="mx-auto w-full max-w-3xl px-5 py-10">
+    <main class="mx-auto w-full max-w-2xl px-5 py-12">
       <slot />
     </main>
     <Footer />

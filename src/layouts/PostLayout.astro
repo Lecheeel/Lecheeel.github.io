@@ -8,7 +8,7 @@ interface Props {
 
 const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags } = post.data;
-const formatted = pubDate.toLocaleDateString('zh-CN', {
+const formatted = pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -19,11 +19,11 @@ const formatted = pubDate.toLocaleDateString('zh-CN', {
   <article>
     <header class="mb-10 border-b border-slate-200 pb-8 dark:border-slate-800">
       <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
-      <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
+      <p class="mt-4 font-mono text-sm text-slate-500 dark:text-slate-400">
         <time datetime={pubDate.toISOString()}>{formatted}</time>
         {
           updatedDate && (
-            <span> · 更新于 {updatedDate.toLocaleDateString('zh-CN')}</span>
+            <span> · updated {updatedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
           )
         }
       </p>

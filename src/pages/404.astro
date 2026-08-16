@@ -2,16 +2,20 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="404 · 页面未找到" description="页面不存在">
-  <div class="flex flex-col items-center py-24 text-center">
-    <p class="text-7xl font-bold text-accent">404</p>
-    <h1 class="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">页面走丢了</h1>
-    <p class="mt-2 text-slate-500 dark:text-slate-400">你访问的页面不存在，回到首页看看吧。</p>
+<Base title="404 · Not Found" description="Page not found">
+  <section class="py-16 text-center">
+    <p class="font-mono text-sm text-slate-400">404</p>
+    <h1 class="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
+      nothing here
+    </h1>
+    <p class="mt-2 text-slate-500 dark:text-slate-400">
+      the page you're looking for doesn't exist.
+    </p>
     <a
       href="/"
-      class="mt-8 rounded-lg bg-accent px-6 py-2.5 font-medium text-white transition-opacity hover:opacity-90"
+      class="mt-6 inline-block rounded-md bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20"
     >
-      回到首页
+      back home
     </a>
-  </div>
+  </section>
 </Base>
