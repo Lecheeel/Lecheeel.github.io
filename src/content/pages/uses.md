@@ -1,26 +1,28 @@
 ---
 title: "uses"
-description: "hardware and software i actually use"
+description: "the stack, current as of august 2026"
 ---
 
-## hardware
+## the machine
 
-- 27" 4K monitor
-- windows 11 laptop
-- debian vps, 1.6GB ram — runs my agent, search, and vector db
-- esp32 / stm32 dev boards
+- a debian vps, 1.6GB ram — runs my agent, search, and vector memory
 - an android phone running the memento collector
+- esp32 / stm32 boards for the hardware side of things
 
-## software
+## the agent stack
 
-- editor: vs code + cursor
-- terminal: powershell 7 (windows) / bash (linux)
+- coding agents, the harness kind: claude code, codex, opencode, pi
+- a self-hosted agent (hermes) wired into feishu and wechat
+- searxng for search, qdrant for vector memory, mem0 on top
+
+## the boring stuff that does the job
+
 - git + github cli
-- pnpm, and a few things that still need npm
-- ai coding agents: claude code, codex
-- self-hosted: a hermes agent, searxng, qdrant
+- pnpm
+- a terminal. every terminal. whichever one is open.
 
-## stuff i've stopped using
+## explicitly not here
 
-- a todo app. i now use a task manager that lives in my chat app,
-  because that's where i already am.
+- my monitor's resolution
+- my editor's brand loyalty
+- anything a job posting would call a "skill"
