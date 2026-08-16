@@ -36,7 +36,7 @@ const jsonLd = JSON.stringify({
     </p>
     <p class="mt-4 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
       i build things, run them on cheap hardware, and write down what breaks.
-      this site ships itself — i just push.
+      most of what i know came from things breaking.
     </p>
 
     <p class="mt-10 font-semibold text-slate-700 dark:text-slate-300">
@@ -94,9 +94,9 @@ const jsonLd = JSON.stringify({
       {
         projects.map((p) => (
           <a
-            href={p.data.url ?? '/projects/'}
-            target={p.data.url ? '_blank' : undefined}
-            rel={p.data.url ? 'noopener' : undefined}
+            href={p.data.repo ?? p.data.url ?? '/projects/'}
+            target="_blank"
+            rel="noopener"
             class="rounded-xl border border-slate-200 p-4 transition-colors hover:border-accent/50 dark:border-slate-800"
           >
             <h3 class="font-medium text-slate-900 dark:text-white">{p.data.title}</h3>
