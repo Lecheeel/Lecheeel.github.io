@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" font-family="ui-monospace, 'JetBrains Mono', Menlo, monospace" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- labels -->
+  <text x="20" y="30" fill="#64748b" font-size="12">phone (sender)</text>
+  <text x="590" y="30" fill="#64748b" font-size="12">server (vault, zero-trust)</text>
+
+  <!-- envelope layers (nested) -->
+  <rect x="20" y="50" width="420" height="280" rx="10" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="36" y="74" fill="#94a3b8" font-size="12">HMAC-SHA256 signature</text>
+  <text x="36" y="92" fill="#64748b" font-size="11">key: deviceToken · covers payload + timestamp</text>
+
+  <rect x="52" y="108" width="356" height="190" rx="8" fill="none" stroke="#818cf8" stroke-width="2"/>
+  <text x="68" y="132" fill="#818cf8" font-size="12">AES-256-GCM ciphertext</text>
+  <text x="68" y="150" fill="#64748b" font-size="11">key: encryptionSecret · authenticated encryption</text>
+
+  <rect x="84" y="166" width="292" height="100" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+  <text x="100" y="190" fill="#334155" font-size="12">plaintext payload</text>
+  <text x="100" y="210" fill="#64748b" font-size="11">deviceId · timestamp · app · title · text</text>
+  <text x="100" y="230" fill="#64748b" font-size="11">JSON, &lt;= 64 KB</text>
+
+  <!-- wire -->
+  <line x1="440" y1="190" x2="560" y2="190" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="452" y="178" fill="#64748b" font-size="11">tls / http</text>
+
+  <!-- server side -->
+  <rect x="560" y="50" width="280" height="280" rx="10" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="576" y="74" fill="#94a3b8" font-size="12">server checks, in order</text>
+
+  <rect x="576" y="92" width="248" height="52" rx="6" fill="none" stroke="#34d399" stroke-width="1.5"/>
+  <text x="590" y="114" fill="#34d399" font-size="12">1 · verify HMAC (timing-safe)</text>
+  <text x="590" y="132" fill="#64748b" font-size="11">reject if signature or timestamp stale</text>
+
+  <rect x="576" y="156" width="248" height="52" rx="6" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="590" y="178" fill="#fbbf24" font-size="12">2 · check clock skew (±5 min)</text>
+  <text x="590" y="196" fill="#64748b" font-size="11">replay window is bounded</text>
+
+  <rect x="576" y="220" width="248" height="52" rx="6" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <text x="590" y="242" fill="#64748b" font-size="12">3 · store ciphertext as-is</text>
+  <text x="590" y="260" fill="#64748b" font-size="11">server never sees plaintext</text>
+
+  <rect x="576" y="284" width="248" height="34" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1"/>
+  <text x="590" y="306" fill="#334155" font-size="12">JSONL: &lt;pkg&gt;/&lt;date&gt;.jsonl</text>
+
+  <!-- attack arrows -->
+  <text x="20" y="372" fill="#f87171" font-size="12">attacks this stops</text>
+  <text x="20" y="392" fill="#64748b" font-size="11">replay · tamper · eavesdrop · server compromise (data stays ciphertext)</text>
+</svg>
