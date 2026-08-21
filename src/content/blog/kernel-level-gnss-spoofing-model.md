@@ -207,7 +207,11 @@ device is forgeable. the defenses that actually matter are:
 
 the same architecture that enables forgery enables **validated replay**
 for test labs: deterministic, replayable GNSS scenarios for testing
-location-dependent apps without field hardware. we think that's the
-legitimate application of this design, and it's the one we'd build
-first. the defense story above stands either way: if you can't trust
-the boot chain, you can't trust the location.
+location-dependent apps without field hardware. that is the legitimate
+application of this design, and the one i would build first.
+
+the open question on the forgery side is the one the model identified:
+server-side fingerprint verification. until a client-side actor can also
+forge cell and wi-fi observations in a way that survives the server's
+database, kernel-level forgery wins every battle inside the device and
+loses the war against any detector that checks the physical world.

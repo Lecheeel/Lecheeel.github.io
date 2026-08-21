@@ -1,73 +1,65 @@
 ---
-title: "detecting watered-down ai relays"
-description: "if you resell an api, someone will water it down. here's how you'd catch them."
+title: "Detecting watered-down AI API relays"
+description: "Five measurable dimensions for checking whether a relay actually serves the model it claims: capability, knowledge cutoff, tool discipline, cache honesty, and billing ratio."
 pubDate: 2026-08-16
 tags: ["ai", "llm", "testing"]
 ---
 
-## the problem
+API relay stations buy quota from model providers and resell it. Some of
+them do not resell what they claim: a smaller model behind a flagship
+label, stale checkpoints, inflated token counts, or cache hit rates that
+no customer can verify. This note sketches how you would detect each
+form of cheating, because I want to build a probe that does it
+automatically.
 
-ai api relay stations are a business now: they buy quota from real
-providers and resell it, usually at a markup, sometimes with "added
-value". the problem is that not all of them resell what they claim to.
-i kept hearing the same complaints:
+## The detection dimensions
 
-- the model answers are *dumber* than the real one, but the label says
-  the flagship. is it a smaller model wearing a name tag?
-- it knows nothing after 2024. that's not a model limitation, that's a
-  different model.
-- the billed token count doesn't match the usage. every request, a
-  little extra, so quiet nobody notices.
-- and the interesting one: **cache hit rates that make no sense**. a
-  relay that controls the cache layer can inflate what it reports,
-  because the customer can't see the other side of the pipe.
+**1. Capability vs. claimed model.** Give the endpoint tasks the flagship
+handles and known impostors fail at: long-context reasoning, multi-step
+math, tool-call discipline. A swapped-in smaller model has a specific,
+repeatable failure signature — it is not "slightly worse", it fails
+particular categories outright.
 
-## the detection dimensions
+**2. Knowledge cutoff.** Ask about dated events, one per year for the
+last several years. Past its cutoff, a model guesses confidently and
+dates things wrong. A handful of such questions brackets the cutoff
+within a few months — enough to expose a model two generations old being
+sold as the current one.
 
-if you wanted to build a probe — a frontend where you drop in a url, a
-key, pick a model, and get a score — here's what you'd measure:
+**3. Tool calling and document understanding.** Can it actually read a
+provided PDF, or does it hallucinate the contents? Can it chain two tool
+calls where the second depends on the first's output? Cost-cutting
+substitutions typically fail here, because tool discipline is the first
+thing cheaper models drop.
 
-**1. actual capability vs claimed model.** give it a task the flagship
-is known to handle and the impostor is known to choke on: long-context
-reasoning, tool-call discipline, math with many steps. the failure
-signature of a swapped model is specific and repeatable.
+**4. Cache honesty.** Prompt caching has a measurable side effect: cached
+requests are faster and cheaper. Probe it: send the same prefix
+repeatedly and compare the reported cache hit rate against observed
+latency. If the relay reports 90% hits but response time never drops,
+the reported number is fabricated.
 
-**2. knowledge cutoff.** ask about events with known dates — after the
-cutoff the model guesses confidently and gets the date wrong. one
-question per year for the last five years is enough to bracket the
-cutoff within a few months. old models are easy to spot; they're
-confident and wrong in ways that have a date stamp on them.
+**5. The billing ratio.** The direct metric: what you were charged for a
+fixed workload, versus what the upstream API would charge for the same
+workload. Every other dimension diagnoses *how* you are being cheated;
+this one measures *how much*.
 
-**3. tool calling and file understanding.** can it actually read a pdf
-you hand it, or does it hallucinate the contents? can it chain two tool
-calls where the second depends on the first's output? relays that
-shave costs by using weaker models fall apart here, because tool
-discipline is exactly what cheap models skip.
+## The sampling problem
 
-**4. billing honesty.** the prompt cache has a public, measurable side
-effect: cached responses are faster and cost a fraction. you can probe
-it — same prefix, repeated calls — and compare the *reported* hit rate
-against the *observed* latency. if the relay reports 90% hits but the
-response time never drops, someone is lying about the cache.
+The hard part is not the tests — it is that the relay controls the
+sampling. You are measuring a box you cannot open, through a channel the
+box's owner operates. So every probe has to look like ordinary traffic:
+capability questions framed as normal use, cutoff questions as trivia,
+cache probes as retries. If a relay can special-case your probe traffic,
+the probe is worthless.
 
-**5. the multiplier.** the universal fraud metric: what did they charge
-you for a request, versus what the upstream api would have charged for
-the same request. run a fixed workload, compute the ratio. everything
-else is theater; this number is the business.
+## What this would look like as a tool
 
-## what i'd build
+A probe service, not a benchmark. Benchmarks compare models; this
+compares a claim against observations. Input: endpoint URL, key, claimed
+model. Output: a score per dimension and one summary statement — "this
+endpoint charges 3.4x the upstream rate and behaves like a model two
+generations old."
 
-a small probe service, not a benchmark. benchmarks compare models; this
-compares **claims against observations**. same input, fixed workload,
-score per dimension, and a final number that says "this relay is charging
-you 3.4x and giving you a model two generations old".
-
-the hard part isn't the tests — it's that the relay controls the
-sampling. you're measuring a box you can't see inside, through a straw.
-so every test has to be one the relay can't special-case without
-breaking something else: capability probes that look like normal
-traffic, cutoff questions that look like trivia, cache probes that look
-like retries. boring, indistinguishable, and brutally specific.
-
-i'm building this. if you run a relay and this post makes you
-uncomfortable, that's data too.
+I am working on this. The open question is which dimensions survive
+contact with relays that know the probe exists — the cache-honesty probe
+in particular becomes an arms race once relays learn its signature.

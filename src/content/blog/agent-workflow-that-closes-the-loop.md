@@ -1,56 +1,60 @@
 ---
-title: "an agent workflow that closes the loop"
-description: "rules i give my coding agents. they were learned the expensive way."
+title: "Working rules for coding agents"
+description: "The rules that actually changed agent session outcomes in my setup: analyze before search, interrogate unclear requirements, parallelize independent work, and close the loop with verification and recorded lessons."
 pubDate: 2026-08-16
 tags: ["ai", "workflow", "agents"]
 ---
 
-i use coding agents a lot — the terminal kind, the harness kind, the
-ones that can run commands and edit files. after enough sessions where
-the agent went off in a confident wrong direction, i wrote down the
-rules that actually stop it.
+I run coding agents daily — the harness kind, with command execution and
+file editing. After enough sessions where an agent went confidently in
+the wrong direction, I distilled the rules that actually change
+outcomes. These are written into the project-level instructions every
+agent reads before working on my repositories.
 
-## analyze before you search
+## 1. Analyze first, search second
 
-an agent's first instinct is to search. mine too. the rule is the
-reverse: **analyze the problem first, then search** — and search for two
-specific things, in order:
+An agent's first instinct is to search. The rule is the reverse: analyze
+the problem and the local code first, then search for two specific
+things, in order:
 
-1. what changed recently? the agent's training data is stale by
-   definition. searching syncs it with the present and kills the worst
-   hallucinations (old APIs, renamed flags, removed features).
-2. does a solution already exist? if someone already fought this bug,
-   i don't want my agent to re-fight it. find the answer, then adapt it.
+1. **What changed recently?** The agent's training data is stale by
+   definition. Searching syncs it with the present and removes the worst
+   hallucination classes (removed APIs, renamed flags, deprecated
+   patterns).
+2. **Does a solution already exist?** If this problem was solved before,
+   find that solution and adapt it, rather than re-deriving it badly.
 
-the failure mode this prevents is the agent confidently reimplementing
-something that was solved years ago, badly.
+The failure mode this prevents is the confident reimplementation of
+something that was solved years ago.
 
-## when the requirement is unclear, interrogate
+## 2. Interrogate unclear requirements — then propose a default
 
-unclear requirements are a user failure, but the agent pays for it. the
-rule: **if you don't understand the requirement, do not act.** ask.
-specifically. and offer a default, because forcing the user to design
-your options for you is also a failure. ask, propose the default, move
-on — don't nickel-and-dime the details that don't matter.
+An unclear requirement is a user-side mistake, but the agent pays for it.
+The rule: if the requirement is ambiguous, do not act; ask. But ask once,
+specifically, and attach a proposed default — forcing the user to
+enumerate options for you is its own failure. Trivial details do not
+deserve confirmation; structural ambiguity does.
 
-## use subagents for the heavy lifting
+## 3. Parallelize independent work into subagents
 
-an agent that does everything in one context drowns. parallel subagents
-with isolated contexts turn a 20-step slog into 3 parallel streams. the
-rule is simple: if a task has independent parts, they should run as
-independent agents.
+An agent that does everything in one context accumulates noise until it
+drowns. If a task decomposes into independent parts, they should run as
+independent agents with isolated contexts, and only their results should
+rejoin the main thread. A 20-step sequential slog becomes 3 parallel
+streams, and each stream stays coherent.
 
-## close the loop
+## 4. Close the loop: verify, then record
 
-the part most workflows miss: **verification and memory**. a change
-isn't done when it's written — it's done when it's tested, and the
-lessons land somewhere reusable. i keep a running set of principles
-every agent must read before touching a project, and after every
-session, the new lessons get appended. the workflow is only as good as
-its feedback loop:
+Most workflows stop at "the change is written." The loop is only closed
+when the change is verified (tests run, behavior checked) and the lesson
+is recorded somewhere reusable. My setup keeps a running set of
+principles per project; after each session, new pitfalls get appended so
+the next session starts with them. The cycle, written out:
 
 ```
 analyze → search → clarify → act → verify → record
 ```
 
-skip any step and the next session pays for it.
+Each step skipped becomes a cost paid by a later session. The
+verification and recording steps are the ones most often skipped, and
+the ones that compound.

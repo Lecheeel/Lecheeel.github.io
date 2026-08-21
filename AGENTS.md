@@ -8,20 +8,24 @@ GitHub Pages + GitHub Actions.
 1. **Bleeding edge, always.** This site intentionally runs the newest
    stable versions of everything — framework, tooling, actions. Follow the
    latest, migrate early, keep Dependabot and auto-merge enabled.
-2. **Understated.** No tech-stack badges, no "powered by" footers, no
-   emoji salads, no "Hi, I'm X 👋" heroes. Restraint is the brand. The
-   audience is people who know — flexing the stack is how you lose them.
+2. **Honest inventory.** Never fabricate personal details (habits,
+   tastes, routines) to fill out the site's personality. If something
+   isn't real, it doesn't go on the page. No slogans, no aphorism
+   endings — posts end with open problems, not quips.
 3. **English only.** All visible content is English. No translations, no
    mixed-language pages. (`<html lang="en">`.)
-4. **Natural voice.** Homepage/README/blog: short lowercase sentences,
-   like a person wrote them. Never marketing voice, never tutorial voice.
-5. **Signals over claims.** Concrete nouns (oklch, pnpm, 1.6GB) and
-   insider specifics, never adjectives like "expert" or "passionate".
+4. **Research-note voice.** Normal sentence case. First person is fine,
+   performance is not. Numbers over adjectives. Read like an Obsidian
+   note written for oneself, not like an indie-blog persona.
+5. **Specifics over claims.** Concrete nouns (64 KB cap, 5-minute skew
+   window, 1.6 GB RAM, 0.033 CNY/hour) and mechanisms, never adjectives
+   like "expert" or "passionate", and never "boring" as a brand word.
 6. **Content is the proof.** Blog posts and projects carry the substance.
    No self-promotion; let the writing do it.
-7. **Information density > volume.** Posts exist because something
-   surprised the author: a bug, a decision, a number. No tutorials, no
-   hot takes, no filler.
+7. **Information density > volume.** One thick post beats three thin
+   ones. If two posts make the same argument, merge them. Posts exist to
+   record a mechanism, a measurement, or a design decision — with the
+   open problems at the end.
 8. **Typography is detail.** Fonts are a system stack (no webfonts — the
    site should load like a file), antialiased, ligatures on, tabular
    figures for dates. Keep the reading width tight (~max-w-2xl).

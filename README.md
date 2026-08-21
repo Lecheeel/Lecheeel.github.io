@@ -1,10 +1,13 @@
-# Lecheeel
+# Lecheeel.github.io
 
-hi! i'm lecheeel.
+Personal site of [Lecheeel](https://lecheeel.github.io) — research notes
+on systems and security topics: encrypted notification pipelines,
+deterministic multi-agent simulation, kernel-level GNSS forgery, and
+operational numbers from self-hosting.
 
-this repo is my little corner of the internet.
-the site deploys itself — i just push.
+Built with Astro, deployed by GitHub Actions on push.
 
-- site — <https://lecheeel.github.io>
-- feed — <https://lecheeel.github.io/rss.xml>
-- mail — ryancuee@gmail.com
+- Site: <https://lecheeel.github.io>
+- RSS: <https://lecheeel.github.io/rss.xml>
+- GitHub: <https://github.com/Lecheeel>
+- Email: ryancuee@gmail.com

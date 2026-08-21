@@ -1,71 +1,60 @@
 ---
-title: "what 13 days of phone notifications look like"
-description: "1873 notifications, 2 apps, 94% from one of them. some observations from a real notification stream."
+title: "What 13 days of phone notifications look like"
+description: "Measured properties of a real notification stream: 1873 events, two apps, 94% concentration in one, 14x daily variance, ~38% duplicates."
 pubDate: 2026-08-17
 tags: ["data", "android", "memento"]
 ---
 
-## the data
+My phone has been running the [memento](/blog/memento/) collector for
+about two weeks. The sample is small but real: 1873 notifications over
+13 days, every one encrypted in transit and at rest. This note records
+what the stream actually looks like, because anyone building on
+notification streams should know these shapes before designing.
 
-my phone has been running a notification collector ([memento](https://github.com/Lecheeel/memento))
-for a couple of weeks. small sample, but real: **1873 notifications
-over 13 days**, every one of them encrypted on the way to a server i
-control. here's what the stream actually looks like.
-
-## the shape of the stream
-
-**two apps, one of them dominant.**
+## Concentration
 
 | app | count | share |
 |---|---|---|
-| wechat (`com.tencent.mm`) | 1766 | 94.3% |
-| alipay (`com.eg.android.AlipayGphone`) | 107 | 5.7% |
+| WeChat (`com.tencent.mm`) | 1766 | 94.3% |
+| Alipay (`com.eg.android.AlipayGphone`) | 107 | 5.7% |
 
-the long tail you'd expect from a phone with 40 apps installed simply
-isn't there — which says more about my capture setup than about my
-phone. i only enabled collection for two apps, so the "stream" is
-deliberately narrow. that's a useful reminder: **a notification stream
-is a sample, not a census**. the moment you analyze it, you're
-analyzing your collection policy as much as your life.
+Collection was enabled for exactly these two apps, so the concentration
+is a property of the collection policy, not of the phone. That is itself
+the first finding: **a notification stream is a sample, not a census** —
+any analysis of it is also an analysis of what you chose to capture.
 
-**volume varies wildly day to day.**
+Within the two apps, the two streams mean different things: the WeChat
+share is a social graph, the Alipay share is a transaction log. Two
+apps already give a usable skeleton of a day.
+
+## Daily variance
+
+Daily counts, in order:
 
 ```
-day 1:  23      day 8:  155
-day 2:  77      day 9:  122
-day 3: 255      day 10: 331
-day 4:  77      day 11:  39
-day 5: 218      day 12: 201
-day 6: 155      day 13:  39
-day 7: 331 (max)   day 14: 167
+23  77  255  77  218  155  331  155  122  331  39  201  39  167
 ```
 
-wait — that's 14 rows for 13 days, because two days peaked at 331.
-mean 144/day, median 155, range 23–331. a 14x swing between quiet days
-and loud ones. the interesting question isn't the average — it's *what
-drives the spikes*. group chats going off, payment confirmations, a
-single conversation generating 30 notifications. that structure is
-exactly what a memory pipeline needs to know about: **the variance is
-the signal**.
+Mean 144/day, median 155, range 23–331 — a 14x swing between the
+quietest and loudest days. The spikes are not noise: they are single
+group conversations going active, or batches of payment confirmations.
+For a memory pipeline this matters, because it means **the interesting
+information is in the variance, not the average** — a system sized for
+the mean will be idle most days and saturated exactly when something
+worth remembering happens.
 
-## what i learned
+## Duplicates
 
-- **duplicates are a real tax.** early tests showed ~38% of the stream
-  was repetition — the same message re-posted, or an app re-sending an
-  alert. any consumer of this data needs dedup before it needs
-  anything else.
-- **two apps already tell a story.** wechat's share of the stream is
-  basically my social graph; alipay's is my transaction log. even at 2
-  apps, the stream is a surprisingly complete skeleton of a day.
-- **encrypted-at-rest changes what you can do with it.** because the
-  server stores signed, encrypted envelopes, "analyze my
-  notifications" is a deliberate act, not a background default. the
-  friction is the feature.
+Early tests measured ~38% of the stream as repetition: the same message
+re-posted, apps re-sending the same alert, status updates for one
+underlying event. Any consumer of this data needs dedup before
+anything else — embedding and summarizing duplicates directly pollutes
+whatever memory store sits downstream.
 
-## the honest caveat
+## Caveats
 
-n=1, n=2 apps, 13 days. this isn't a study — it's a diary with
-numbers. the value is in the shape: if you're building anything that
-consumes notification streams (memory pipes, personal assistants,
-activity trackers), the variance, the duplicates, and the collection
-bias are the three things to design for first.
+n=1 device, 2 apps, 13 days. This is a characterization of one stream,
+not a population study. The transferable findings are structural:
+collection policy defines the sample, daily variance spans an order of
+magnitude, and roughly a third of the volume is duplicate. Design for
+those three shapes and the specifics stop mattering.

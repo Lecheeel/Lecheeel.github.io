@@ -168,7 +168,11 @@ phase 3 — round it out
   suspicious .ko detection) are the obvious next move for the SDKs that
   care.
 
-the design is deliberately boring: standard mechanisms (kprobe, misc
-devices, the kernel crate), one red module in the middle, and an app
-that's just a file writer. the interesting part was always going to be
-the NMEA generator and the QMI adapters — everything else is plumbing.
+## next step
+
+phase 1, concretely: a chardev-based device with an unlocked bootloader,
+the minimal rust module hooking the driver's `read()`, a static nmea
+generator, and a hardcoded coordinate. the acceptance criterion is a
+gps status readout showing the forged position and a consumer app
+believing it. everything else in this blueprint is downstream of that
+first test passing.

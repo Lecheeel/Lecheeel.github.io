@@ -1,15 +1,18 @@
 ---
 title: "now"
-description: "what i'm working on right now"
+description: "current projects, August 2026"
 ---
 
-as of august 2026:
+As of August 2026:
 
-- building **memento** — the notification → AI memory pipeline. the
-  collector side is done; the "make the AI actually use it" side is the
-  interesting half.
-- iterating on **worldline-engine** — deterministic multi-agent
-  simulation. replayability is the whole point.
-- dogfooding this site's automation — markdown in, pushed, deployed.
-- keeping a 1.6GB vps alive running my agent, search, and vector memory.
-  it's a hobby. (it's not a job.)
+- **Memento** — the end-to-end encrypted notification pipeline. The
+  collector and server side are done; the consumption side (filtering,
+  embedding, feeding an agent's memory) is in design.
+- **Worldline engine** — deterministic multi-agent simulation kernel.
+  The current focus is making long runs cheap to store and replay.
+- **Kernel-level location forgery** — modeling work published,
+  implementation blueprint written, hardware phase not started.
+- **Reme** — a spaced-repetition study app (FSRS v6) that carries my
+  exam-prep question bank. Currently migrating storage from sqflite to
+  Drift and dropping the legacy compatibility layers.
+- This site — maintained as the public record of the above.

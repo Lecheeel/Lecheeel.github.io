@@ -1,6 +1,6 @@
 ---
-title: "the encrypted envelope: getting hmac and aes-gcm right"
-description: "a notification pipe where the server can store everything and understand nothing. every layer, every key, every constant, and why."
+title: "The encrypted envelope: HMAC-SHA256 and AES-256-GCM in a notification protocol"
+description: "A notification pipe where the server stores everything and understands nothing. Each layer, key, and constant, and the reasoning behind it."
 pubDate: 2026-08-17
 tags: ["crypto", "protocols", "security"]
 ---
@@ -192,9 +192,10 @@ simplicity that turns a lost key into a data breach.
 4. **test the attacks, not the happy path.** replay an old envelope and
    watch it die. flip one byte of the ciphertext and watch the tag
    fail. run the phone with a wrong clock and watch the skew check
-   fire. a protocol that survives those three tests is a protocol you
-   can ship.
+   fire.
 
-the envelope is deliberately boring: standard primitives, small
-constants, a server that can't read its own data. boring protocols
-survive. clever ones get writeups like this one.
+what's still open: nonce generation is random-per-message, which is safe
+at this message rate but not auditable — a per-device counter is the
+next change. and the whole scheme inherits the phone's key storage as
+its root of trust, which on a compromised device is weaker than the
+math above suggests.

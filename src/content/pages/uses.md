@@ -1,28 +1,30 @@
 ---
 title: "uses"
-description: "the stack, current as of august 2026"
+description: "hardware and software in active use, August 2026"
 ---
 
-## the machine
+## Hardware
 
-- a debian vps, 1.6GB ram — runs my agent, search, and vector memory
-- an android phone running the memento collector
-- esp32 / stm32 boards for the hardware side of things
+- Debian VPS, 1 core / 1.6 GB RAM — runs the agent gateway, SearXNG,
+  Qdrant, and the memento ingest server
+- Android phone — runs the memento collector and Reme
+- ESP32 / STM32 boards for hardware projects
 
-## the agent stack
+## Agent stack
 
-- coding agents, the harness kind: claude code, codex, opencode, pi
-- a self-hosted agent (hermes) wired into feishu and wechat
-- searxng for search, qdrant for vector memory, mem0 on top
+- Coding agents in terminals: Claude Code, Codex, OpenCode, Pi
+- A self-hosted Hermes agent wired into Feishu and WeChat
+- Qwen 3.8-Max (Bailian Token Plan) for heavy reasoning and vision,
+  DeepSeek for the rest
+- SearXNG for search, Qdrant for vectors, Mem0 on top
 
-## the boring stuff that does the job
+## App development
 
-- git + github cli
-- pnpm
-- a terminal. every terminal. whichever one is open.
+- Flutter (Reme)
+- Kotlin/Android (memento collector)
+- Rust for kernel work
 
-## explicitly not here
+## Version control and deployment
 
-- my monitor's resolution
-- my editor's brand loyalty
-- anything a job posting would call a "skill"
+- Git + GitHub CLI, Conventional Commits
+- GitHub Actions for this site (push → build → Pages)

@@ -1,63 +1,66 @@
 ---
-title: "memento: turning phone notifications into an AI memory pipe"
-description: "end-to-end encrypted notifications, shipped to your own server. the raw material for an AI that actually remembers."
+title: "Memento: an end-to-end encrypted notification pipeline"
+description: "Design notes on a phone-to-server notification collector: encryption choices, storage format, and the install problem that turned out harder than the server."
 pubDate: 2026-08-15
 tags: ["android", "self-hosting", "crypto", "ai"]
 ---
 
-## the problem
+Memento ([github.com/Lecheeel/memento](https://github.com/Lecheeel/memento))
+is an Android notification collector that ships notifications to my own
+server, encrypted end-to-end. The long-term goal is to give an agent a
+memory of what happens on the phone without giving the server readable
+access to any of it. This note records the design decisions.
 
-your phone knows what you actually do all day. your apps send you
-notifications about it — payments, messages, reminders, delivery updates —
-and that stream is a pretty honest diary of your life. but it's locked in a
-silo: notification history is ephemeral, per-app, and nobody can query it.
+## The problem
 
-so i built [memento](https://github.com/Lecheeel/memento): an android
-notification collector that ships the stream to my own server, encrypted.
+A phone's notification stream is a fairly honest log of the day —
+payments, messages, reminders, delivery updates — but it is ephemeral,
+per-app, and not queryable. The Android notification history API keeps a
+short window and exposes nothing to third parties. So the first step of
+any "AI memory of the phone" project is simply getting the stream out,
+with some control over who can read it.
 
-## the design
+## Design decisions
 
-three decisions shaped everything:
+**1. End-to-end encryption, by default.** Every envelope is signed with
+HMAC-SHA256 (timestamp included, with a bounded clock-skew window to
+reject replays) and encrypted with AES-256-GCM under a key that only the
+phone and I hold. The server stores ciphertext and verifies signatures;
+it never decrypts. The detailed protocol is written up in
+[the envelope post](/blog/encrypted-envelope-hmac-aes-gcm/).
 
-**1. end-to-end encryption by default.** the server never sees plaintext on
-the wire. every envelope is HMAC-SHA256 signed (with a timestamp and a
-clock-skew check so replays fail), and the payload is AES-256-GCM encrypted
-with a key only the phone and i know. the server is a dumb vault — it can
-store, and it can check signatures, and that's it.
+**2. The server is one dependency-free Node.js file.** No Express, no
+database, no Docker — one `index.mjs`, a config file, and JSONL files
+partitioned by package name and date. It runs on anything with Node ≥ 18.
+A server whose entire codebase fits in one read-through file has a much
+smaller attack surface, and a much smaller maintenance surface, than a
+"proper" service would.
 
-**2. the server is a single node.js file, zero dependencies.** no express,
-no database, no docker. one `index.mjs`, a config file, and a directory of
-JSONL files partitioned by package name and date. it runs on anything with
-node ≥ 18 — a raspberry pi, an old laptop, a 1.6GB vps with 400MB free.
-there's something nice about a server whose entire attack surface is one
-file you've read end to end.
+**3. One-line install, idempotent.** `curl … | sudo bash -s 49033`
+downloads the server, generates pairing keys, writes a hardened systemd
+unit, and self-checks. Re-running it preserves keys and data — only the
+code is replaced. This turned out to be harder to get right than the
+server itself: a piped script has no "own directory" to copy files from,
+so the installer detects `BASH_SOURCE[0] == "-"` and fetches the server
+files from GitHub instead. Key preservation on reinstall was the
+difference between a one-command setup and a re-pairing ritual.
 
-**3. one-line install, idempotent.** `curl … | sudo bash -s 49033` downloads
-the server, generates pairing keys, writes a hardened systemd unit, and
-self-checks. re-running it keeps your keys and data — only the code
-updates. the install script was honestly harder to get right than the
-server: piping a script that copies "its own directory" through stdin
-doesn't work, because there is no directory. the fix was detecting
-`BASH_SOURCE[0] == "-"` and fetching the server files from github instead.
+## Measured properties of the stream
 
-## what i learned
+- **~38% of notifications are duplicates.** The same message re-posted,
+  apps re-sending the same alert. Any downstream consumer needs dedup
+  before anything else.
+- **Storage partitioning matters for retrieval.** Partitioning by
+  package and date keeps daily files small and makes time-range queries
+  a file read, not a scan.
+- **The collector is deliberately narrow.** I enabled collection for two
+  apps (WeChat, Alipay) to keep the data meaningful. A notification
+  stream is a sample defined by your collection policy, not a census.
 
-- **notifications are ~38% duplicates.** same message re-posted, system
-  noise, apps re-sending the same alert. any pipeline that consumes this
-  data needs dedup before it needs anything else.
-- **keys rotate, scripts lie.** the pairing secret got regenerated a few
-  times during development, and every time i had to re-pair the phone.
-  writing an installer that *preserves* existing keys on re-run was the
-  difference between "one command" and "a ritual".
-- **the interesting part is downstream.** a vault of encrypted JSONL is
-  just storage. the actual product is what you do with it: filter noise,
-  embed the keepers, and feed them to an LLM so your agent has a memory of
-  what happened on your phone even when you never told it. that part is
-  still being built.
+## What is not done
 
-## status
-
-it works. notifications land on the server in real time, encrypted, and
-the `/events` endpoint returns them. the "AI memory" half — daily summaries,
-vector search over old notifications — is the next step, and the storage
-format was designed for it from day one.
+The vault works: notifications land encrypted, the `/events` endpoint
+returns them. The consumption side — filtering noise, embedding the
+useful ones, feeding summaries into agent memory — is the part still
+under design. The storage format (append-only JSONL, per-package
+partitioning) was chosen to make that step cheap when it happens.
