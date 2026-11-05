@@ -4,17 +4,7 @@
 <div class="ascii-background" aria-hidden="true">
   <canvas id="ascii-ocean"></canvas>
 </div>
-<button
-  id="ocean-toggle"
-  class="ocean-toggle"
-  type="button"
-  aria-label="Pause background animation"
-  aria-pressed="false"
-  hidden
->
-  <span class="ocean-toggle-dot" aria-hidden="true"></span>
-  <span data-ocean-label>Pause ocean</span>
-</button>
+
 
 <script>
   import { OceanEngine } from '../vendor/ascii-sharks/engine';
@@ -25,13 +15,10 @@
   function mountOcean() {
     dispose?.();
     const canvas = document.querySelector<HTMLCanvasElement>('#ascii-ocean');
-    const button = document.querySelector<HTMLButtonElement>('#ocean-toggle');
-    if (!canvas || !button) return;
+    if (!canvas) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 767px)');
-    let paused = false;
-    try { paused = localStorage.getItem('ocean-paused') === 'true'; } catch { /* Storage may be disabled. */ }
 
     let engine: OceanEngine | undefined;
     let removed = false;
@@ -42,11 +29,11 @@
     function sync() {
       if (removed) return;
       const reduced = reducedMotion.matches;
-      const stop = paused || reduced || document.hidden;
+      const stop = reduced || document.hidden;
       if (stop) {
         engine?.destroy();
         engine = undefined;
-        // A paused page keeps its last frame. Reduced motion has no decoration.
+        // Respect reduced-motion preferences and suspend work in hidden tabs.
         if (reduced) canvas!.getContext('2d')?.clearRect(0, 0, canvas!.width, canvas!.height);
       } else if (!engine) {
         try {
@@ -59,21 +46,9 @@
           });
         } catch (error) {
           console.warn('Ocean background unavailable:', error);
-          button!.hidden = true;
           return;
         }
       }
-      button!.hidden = reduced;
-      button!.setAttribute('aria-pressed', String(paused));
-      button!.setAttribute('aria-label', paused ? 'Play background animation' : 'Pause background animation');
-      const label = button!.querySelector('[data-ocean-label]');
-      if (label) label.textContent = paused ? 'Play ocean' : 'Pause ocean';
-    }
-
-    function toggle() {
-      paused = !paused;
-      try { localStorage.setItem('ocean-paused', String(paused)); } catch { /* Still works for this page. */ }
-      sync();
     }
 
     function resizeMode() {
@@ -92,7 +67,6 @@
 
     function hidePage() { engine?.destroy(); engine = undefined; }
 
-    button.addEventListener('click', toggle);
     reducedMotion.addEventListener('change', sync);
     compact.addEventListener('change', resizeMode);
     document.addEventListener('visibilitychange', sync);
@@ -105,7 +79,6 @@
       clearTimeout(rebuildTimer);
       engine?.destroy();
       engine = undefined;
-      button.removeEventListener('click', toggle);
       reducedMotion.removeEventListener('change', sync);
       compact.removeEventListener('change', resizeMode);
       document.removeEventListener('visibilitychange', sync);
@@ -146,32 +119,6 @@
   :global(.dark) .ascii-background { opacity: var(--ocean-desktop-opacityDark, 0.58); mix-blend-mode: screen; }
   :global(.dark) canvas { filter: grayscale(var(--ocean-desktop-grayscale, 1)) saturate(var(--ocean-desktop-saturation, 0.3)) contrast(var(--ocean-desktop-contrast, 1)); }
 
-  .ocean-toggle {
-    position: fixed;
-    right: 1.25rem;
-    bottom: 1.25rem;
-    z-index: 30;
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid rgb(148 163 184 / 0.35);
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #fff;
-    color: #475569;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    cursor: pointer;
-  }
-
-  .ocean-toggle[hidden] { display: none; }
-  .ocean-toggle:hover { border-color: currentColor; }
-  .ocean-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
-  .ocean-toggle-dot { width: 5px; height: 5px; border-radius: 50%; background: #64748b; }
-  .ocean-toggle[aria-pressed='true'] .ocean-toggle-dot { background: #94a3b8; }
-  :global(.dark) .ocean-toggle { background: #020617; color: #94a3b8; }
-
   @media (max-width: 767px) {
     .ascii-background {
       opacity: var(--ocean-mobile-opacityLight, 0.58);
@@ -182,14 +129,13 @@
     :global(.dark) .ascii-background { opacity: var(--ocean-mobile-opacityDark, 0.52); }
     canvas { filter: grayscale(var(--ocean-mobile-grayscale, 1)) invert(1) hue-rotate(180deg) saturate(var(--ocean-mobile-saturation, 0.3)) contrast(var(--ocean-mobile-contrast, 1)); }
     :global(.dark) canvas { filter: grayscale(var(--ocean-mobile-grayscale, 1)) saturate(var(--ocean-mobile-saturation, 0.3)) contrast(var(--ocean-mobile-contrast, 1)); }
-    .ocean-toggle { position: static; margin: 0.25rem auto 1rem; display: flex; width: fit-content; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ascii-background, .ocean-toggle { display: none; }
+    .ascii-background { display: none; }
   }
 
   @media print {
-    .ascii-background, .ocean-toggle { display: none; }
+    .ascii-background { display: none; }
   }
 </style>
