@@ -1,0 +1,195 @@
+---
+// Source and full MIT license: src/vendor/ascii-sharks/.
+---
+<div class="ascii-background" aria-hidden="true">
+  <canvas id="ascii-ocean"></canvas>
+</div>
+<button
+  id="ocean-toggle"
+  class="ocean-toggle"
+  type="button"
+  aria-label="Pause background animation"
+  aria-pressed="false"
+  hidden
+>
+  <span class="ocean-toggle-dot" aria-hidden="true"></span>
+  <span data-ocean-label>Pause ocean</span>
+</button>
+
+<script>
+  import { OceanEngine } from '../vendor/ascii-sharks/engine';
+  import { applyOceanStyles, getOceanSettings, oceanRoster, rendererOptions, sceneSignature, SETTINGS_EVENT } from './ocean-settings';
+
+  let dispose: (() => void) | undefined;
+
+  function mountOcean() {
+    dispose?.();
+    const canvas = document.querySelector<HTMLCanvasElement>('#ascii-ocean');
+    const button = document.querySelector<HTMLButtonElement>('#ocean-toggle');
+    if (!canvas || !button) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const compact = window.matchMedia('(max-width: 767px)');
+    let paused = false;
+    try { paused = localStorage.getItem('ocean-paused') === 'true'; } catch { /* Storage may be disabled. */ }
+
+    let engine: OceanEngine | undefined;
+    let removed = false;
+    let rebuildTimer: ReturnType<typeof setTimeout> | undefined;
+    let engineSignature = '';
+    applyOceanStyles();
+
+    function sync() {
+      if (removed) return;
+      const reduced = reducedMotion.matches;
+      const stop = paused || reduced || document.hidden;
+      if (stop) {
+        engine?.destroy();
+        engine = undefined;
+        // A paused page keeps its last frame. Reduced motion has no decoration.
+        if (reduced) canvas!.getContext('2d')?.clearRect(0, 0, canvas!.width, canvas!.height);
+      } else if (!engine) {
+        try {
+          const mode = compact.matches ? 'mobile' : 'desktop';
+          const config = getOceanSettings()[mode];
+          engineSignature = sceneSignature(config);
+          engine = new OceanEngine(canvas!, oceanRoster(mode), {
+            fishCount: config.fishCount, maxFps: config.maxFps, timeScale: config.speed,
+            interactive: config.interactive, render: rendererOptions(config),
+          });
+        } catch (error) {
+          console.warn('Ocean background unavailable:', error);
+          button!.hidden = true;
+          return;
+        }
+      }
+      button!.hidden = reduced;
+      button!.setAttribute('aria-pressed', String(paused));
+      button!.setAttribute('aria-label', paused ? 'Play background animation' : 'Pause background animation');
+      const label = button!.querySelector('[data-ocean-label]');
+      if (label) label.textContent = paused ? 'Play ocean' : 'Pause ocean';
+    }
+
+    function toggle() {
+      paused = !paused;
+      try { localStorage.setItem('ocean-paused', String(paused)); } catch { /* Still works for this page. */ }
+      sync();
+    }
+
+    function resizeMode() {
+      engine?.destroy();
+      engine = undefined;
+      sync();
+    }
+
+    function settingsChanged() {
+      applyOceanStyles();
+      const config = getOceanSettings()[compact.matches ? 'mobile' : 'desktop'];
+      const signature = sceneSignature(config);
+      clearTimeout(rebuildTimer);
+      if (signature !== engineSignature) rebuildTimer = setTimeout(resizeMode, 160);
+    }
+
+    function hidePage() { engine?.destroy(); engine = undefined; }
+
+    button.addEventListener('click', toggle);
+    reducedMotion.addEventListener('change', sync);
+    compact.addEventListener('change', resizeMode);
+    document.addEventListener('visibilitychange', sync);
+    document.addEventListener(SETTINGS_EVENT, settingsChanged);
+    window.addEventListener('pagehide', hidePage);
+    sync();
+
+    dispose = () => {
+      removed = true;
+      clearTimeout(rebuildTimer);
+      engine?.destroy();
+      engine = undefined;
+      button.removeEventListener('click', toggle);
+      reducedMotion.removeEventListener('change', sync);
+      compact.removeEventListener('change', resizeMode);
+      document.removeEventListener('visibilitychange', sync);
+      document.removeEventListener(SETTINGS_EVENT, settingsChanged);
+      window.removeEventListener('pagehide', hidePage);
+    };
+  }
+
+  document.addEventListener('astro:before-swap', () => { dispose?.(); dispose = undefined; });
+  document.addEventListener('astro:page-load', mountOcean);
+  window.addEventListener('pageshow', (event) => { if (event.persisted) mountOcean(); });
+  mountOcean();
+</script>
+
+<style>
+  .ascii-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: var(--ocean-desktop-opacityLight, 0.62);
+    mix-blend-mode: multiply;
+    /* Silhouettes remain visible behind the reading column, stronger at the edges. */
+    mask-image: linear-gradient(to right, #000 0%, #000 max(0px, calc(50% - 26rem)),
+      rgb(0 0 0 / var(--ocean-desktop-centerVisibility, 0.32)) max(0px, calc(50% - 21rem)),
+      rgb(0 0 0 / var(--ocean-desktop-centerVisibility, 0.32)) min(100%, calc(50% + 21rem)), #000 min(100%, calc(50% + 26rem)), #000 100%);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-mono);
+    filter: grayscale(var(--ocean-desktop-grayscale, 1)) invert(1) hue-rotate(180deg) saturate(var(--ocean-desktop-saturation, 0.3)) contrast(var(--ocean-desktop-contrast, 1));
+  }
+
+  :global(.dark) .ascii-background { opacity: var(--ocean-desktop-opacityDark, 0.58); mix-blend-mode: screen; }
+  :global(.dark) canvas { filter: grayscale(var(--ocean-desktop-grayscale, 1)) saturate(var(--ocean-desktop-saturation, 0.3)) contrast(var(--ocean-desktop-contrast, 1)); }
+
+  .ocean-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 30;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    color: #475569;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    cursor: pointer;
+  }
+
+  .ocean-toggle[hidden] { display: none; }
+  .ocean-toggle:hover { border-color: currentColor; }
+  .ocean-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .ocean-toggle-dot { width: 5px; height: 5px; border-radius: 50%; background: #64748b; }
+  .ocean-toggle[aria-pressed='true'] .ocean-toggle-dot { background: #94a3b8; }
+  :global(.dark) .ocean-toggle { background: #020617; color: #94a3b8; }
+
+  @media (max-width: 767px) {
+    .ascii-background {
+      opacity: var(--ocean-mobile-opacityLight, 0.58);
+      mask-image: linear-gradient(to right, #000,
+        rgb(0 0 0 / var(--ocean-mobile-centerVisibility, 1)) 20%,
+        rgb(0 0 0 / var(--ocean-mobile-centerVisibility, 1)) 80%, #000);
+    }
+    :global(.dark) .ascii-background { opacity: var(--ocean-mobile-opacityDark, 0.52); }
+    canvas { filter: grayscale(var(--ocean-mobile-grayscale, 1)) invert(1) hue-rotate(180deg) saturate(var(--ocean-mobile-saturation, 0.3)) contrast(var(--ocean-mobile-contrast, 1)); }
+    :global(.dark) canvas { filter: grayscale(var(--ocean-mobile-grayscale, 1)) saturate(var(--ocean-mobile-saturation, 0.3)) contrast(var(--ocean-mobile-contrast, 1)); }
+    .ocean-toggle { position: static; margin: 0.25rem auto 1rem; display: flex; width: fit-content; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-background, .ocean-toggle { display: none; }
+  }
+
+  @media print {
+    .ascii-background, .ocean-toggle { display: none; }
+  }
+</style>

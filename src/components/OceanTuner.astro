@@ -1,0 +1,220 @@
+---
+import { LIMITS, SHARK_CHOICES } from './ocean-settings';
+const groups = [
+  { title: 'Reading & visibility', controls: [
+    ['opacityLight', 'Light background', 'Artwork opacity in light mode.'],
+    ['opacityDark', 'Dark background', 'Artwork opacity in dark mode.'],
+    ['scrimOpacity', 'Reading mask', 'Higher = a quieter background beneath the text.'],
+    ['centerVisibility', 'Center visibility', 'Fade the center separately from the edges.'],
+  ] },
+  { title: 'Color & character style', controls: [
+    ['saturation', 'Color intensity', 'Only affects color palettes; grayscale stays gray.'],
+    ['contrast', 'Artwork contrast', 'Adjust the artwork, not the foreground text.'],
+    ['cellScale', 'Character cell size', 'Larger cells create a coarser ASCII image.'],
+    ['glyphScale', 'Glyph size', 'Character height relative to its grid cell.'],
+    ['surfaceOpacity', 'Body fill', 'Zero = characters only; one = shaded cells.'],
+    ['gridOpacity', 'Background grid', 'Zero removes grid lines.'],
+    ['wakeStrength', 'Wake & ripple strength', 'Zero hides wake dots and feeding flashes.'],
+  ] },
+  { title: 'Motion & population', controls: [
+    ['size', 'All shark sizes', 'Multiplies the individual sizes below.'],
+    ['speed', 'Swim speed', 'Scale the simulation speed.'],
+    ['fishCount', 'Small fish', 'Zero removes small fish.'],
+    ['maxFps', 'Frame-rate limit', 'Lower settings use less processing power.'],
+  ] },
+] as const;
+---
+<ocean-tuner id="ocean-tuner" class="ocean-tuner">
+  <details open class="tuner-shell">
+    <summary>Ocean tuning <span>Temporary preview controls</span></summary>
+    <div class="tuner-body">
+      <p>Desktop and mobile have independent settings. Changes stay in this browser; copy the JSON when the result feels right.</p>
+      <fieldset class="mode-picker">
+        <legend>Edit settings for</legend>
+        <label><input type="radio" name="ocean-mode" value="desktop" /> Desktop</label>
+        <label><input type="radio" name="ocean-mode" value="mobile" /> Mobile</label>
+      </fieldset>
+      <p data-preview-mode class="preview-note"></p>
+      <div class="presets" aria-label="Appearance presets">
+        <button type="button" data-preset="reference">Reference gray</button>
+        <button type="button" data-preset="quiet">Quiet reading</button>
+        <button type="button" data-preset="muted">Muted color</button>
+        <button type="button" data-theme>Switch light / dark</button>
+      </div>
+      <fieldset class="appearance-pickers">
+        <legend>Palette & rendering</legend>
+        <label>Color palette <select data-setting="colorMode">
+          <option value="grayscale">Grayscale (reference)</option><option value="muted">Muted natural colors</option>
+          <option value="ocean">Ocean colors</option><option value="custom">Custom two-color blend</option>
+        </select></label>
+        <label>Character style <select data-setting="glyphStyle">
+          <option value="classic">Classic ASCII</option><option value="typewriter">Typewriter symbols</option>
+          <option value="dots">Dots & circles</option><option value="blocks">Block mosaic</option>
+        </select></label>
+        <label>Primary color <input type="color" data-setting="primaryColor" aria-label="Primary shark color" /></label>
+        <label>Secondary color <input type="color" data-setting="secondaryColor" aria-label="Secondary shark color" /></label>
+        <small class="wide">Color pickers apply to Custom two-color blend. Color intensity controls saturation.</small>
+      </fieldset>
+      <details open class="tuner-group">
+        <summary>Shark species <span data-species-count></span></summary>
+        <p class="preview-note">Enable any combination, including none. Each species appears once. Individual size is a multiplier.</p>
+        <div class="species-list">
+          {SHARK_CHOICES.map(({kind, label}) => (
+            <div class="species-row">
+              <label class="species-check"><input type="checkbox" data-species={kind} /> {label}</label>
+              <label class="species-scale"><span class="sr-only">{label} size</span><input type="range" min="0.5" max="2" step="0.05" data-species-scale={kind} aria-label={`${label} size`} /><output data-scale-value={kind}></output></label>
+            </div>
+          ))}
+        </div>
+        <div class="tuner-actions"><button type="button" data-species-action="all">Select all</button><button type="button" data-species-action="none">Clear selection</button></div>
+      </details>
+      {groups.map(group => (
+        <details open={group.title === 'Reading & visibility'} class="tuner-group">
+          <summary>{group.title}</summary>
+          <div class="slider-grid">
+            {group.controls.map(([key,label,description]) => {
+              const [min,max,step] = LIMITS[key];
+              return <label>{label}<output data-value={key}></output><input type="range" min={min} max={max} step={step} data-setting={key} aria-label={label} /><small>{description}</small></label>;
+            })}
+          </div>
+          {group.title === 'Motion & population' && <label class="interactive"><input type="checkbox" data-setting="interactive" /> Pointer interaction and click ripples</label>}
+        </details>
+      ))}
+      <div class="tuner-actions">
+        <button type="button" data-copy>Copy parameters</button>
+        <button type="button" data-reset>Reset defaults</button>
+        <button type="button" data-top>Preview page top ↑</button>
+      </div>
+      <p class="tuner-status" role="status" aria-live="polite" data-status>Settings are saved only in this browser.</p>
+      <details class="tuner-group">
+        <summary>Export / import parameters</summary>
+        <label>Current parameters<textarea aria-label="Exported ocean parameters" data-export readonly spellcheck="false" rows="10"></textarea></label>
+        <label>Paste saved parameters<textarea aria-label="Import ocean parameters" data-import spellcheck="false" rows="5" placeholder="Paste a complete exported JSON object"></textarea></label>
+        <button type="button" data-import-action>Apply pasted parameters</button>
+      </details>
+    </div>
+  </details>
+</ocean-tuner>
+<script>
+  import { getOceanSettings, updateOceanSettings, updateSceneSettings, resetOceanSettings, importOceanSettings, exportOceanSettings, SETTINGS_EVENT, LIMITS, SHARK_CHOICES, type OceanMode, type SceneSettings, type NumericSetting } from './ocean-settings';
+  import type { SharkKind } from '../vendor/ascii-sharks/world';
+  class OceanTuner extends HTMLElement {
+    private mode: OceanMode = 'desktop';
+    private abort?: AbortController;
+    private compact = window.matchMedia('(max-width: 767px)');
+    connectedCallback() {
+      this.abort?.abort(); this.abort = new AbortController();
+      const { signal } = this.abort;
+      this.mode = this.compact.matches ? 'mobile' : 'desktop';
+      this.addEventListener('input', this.onInput, { signal });
+      this.addEventListener('change', this.onChange, { signal });
+      this.addEventListener('click', this.onAction, { signal });
+      document.addEventListener(SETTINGS_EVENT, this.render, { signal });
+      this.compact.addEventListener('change', this.onViewport, { signal });
+      this.render();
+    }
+    disconnectedCallback() { this.abort?.abort(); }
+    private status(text: string) { const el=this.querySelector('[data-status]'); if(el) el.textContent=text; }
+    private saved(ok: boolean) { this.status(ok ? 'Preview updated. Saved in this browser.' : 'Preview updated; storage unavailable. Copy parameters before leaving.'); }
+    private onViewport = () => { this.mode = this.compact.matches ? 'mobile' : 'desktop'; this.render(); };
+    private onChange = (event: Event) => {
+      const input = event.target;
+      if (input instanceof HTMLInputElement && input.name === 'ocean-mode') {
+        this.mode = input.value === 'mobile' ? 'mobile' : 'desktop'; this.render();
+      } else if (input instanceof HTMLSelectElement || (input instanceof HTMLInputElement && input.type === 'checkbox')) this.onInput(event);
+    };
+    private onInput = (event: Event) => {
+      const input=event.target;
+      if (!(input instanceof HTMLInputElement || input instanceof HTMLSelectElement)) return;
+      if (input instanceof HTMLInputElement && input.dataset.species) {
+        const kind=input.dataset.species as SharkKind;
+        const species=getOceanSettings()[this.mode].species;
+        this.saved(updateOceanSettings(this.mode, 'species', input.checked ? [...species, kind] : species.filter(s => s !== kind)));
+      } else if(input instanceof HTMLInputElement && input.dataset.speciesScale) {
+        const sizes=getOceanSettings()[this.mode].speciesScale;
+        sizes[input.dataset.speciesScale as SharkKind]=Number(input.value);
+        this.saved(updateOceanSettings(this.mode,'speciesScale',sizes));
+      } else if(input.dataset.setting) {
+        const key=input.dataset.setting as keyof SceneSettings;
+        const value=input instanceof HTMLInputElement && input.type==='checkbox' ? input.checked : key in LIMITS ? Number(input.value) : input.value;
+        this.saved(updateOceanSettings(this.mode,key,value));
+      }
+    };
+    private onAction = async (event: Event) => {
+      const target=event.target;
+      if(!(target instanceof Element)) return;
+      const button=target.closest('button'); if(!button) return;
+      if(button.hasAttribute('data-copy')) {
+        const area=this.querySelector<HTMLTextAreaElement>('[data-export]');
+        try {
+          if(!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(exportOceanSettings()); this.status('Parameters copied. Send them back to lock in this look.');
+        } catch {
+          const details=area?.closest('details'); if(details) details.open=true;
+          area?.focus(); area?.select(); this.status('Copy the selected JSON with Ctrl/Cmd+C or long-press.');
+        }
+      } else if(button.hasAttribute('data-reset')) { this.saved(resetOceanSettings()); }
+      else if(button.hasAttribute('data-import-action')) {
+        try { this.saved(importOceanSettings(JSON.parse(this.querySelector<HTMLTextAreaElement>('[data-import]')?.value || ''))); }
+        catch(error) { this.status(`Import not applied: ${error instanceof Error ? error.message : 'Invalid JSON'}`); }
+      } else if(button.hasAttribute('data-species-action')) {
+        this.saved(updateOceanSettings(this.mode,'species',button.dataset.speciesAction==='all' ? SHARK_CHOICES.map(s=>s.kind) : []));
+      } else if(button.hasAttribute('data-preset')) {
+        const preset=button.dataset.preset;
+        this.saved(updateSceneSettings(this.mode,preset==='quiet' ? {colorMode:'grayscale',opacityLight:0.4,opacityDark:0.35,scrimOpacity:0.96,gridOpacity:0,wakeStrength:0.2} : preset==='muted' ? {colorMode:'muted',saturation:0.3,opacityLight:0.58,opacityDark:0.52,scrimOpacity:0.86} : {colorMode:'grayscale',glyphStyle:'classic',opacityLight:0.62,opacityDark:0.58,scrimOpacity:this.mode==='mobile'?0.78:0.92,surfaceOpacity:0.5,saturation:0.3}));
+      } else if(button.hasAttribute('data-theme')) document.querySelector<HTMLButtonElement>('#theme-toggle')?.click();
+      else if(button.hasAttribute('data-top')) window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    };
+    private render = () => {
+      const values=getOceanSettings()[this.mode];
+      for(const input of this.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-setting]')) {
+        const key=input.dataset.setting as keyof SceneSettings;
+        if(input instanceof HTMLInputElement && input.type==='checkbox') input.checked=Boolean(values[key]);
+        else input.value=String(values[key]);
+        const output=this.querySelector(`[data-value="${key}"]`);
+        const n=values[key] as number;
+        if(output) output.textContent=['size','speed','cellScale','glyphScale','contrast'].includes(key)?`${n.toFixed(2)}×`:['fishCount','maxFps'].includes(key)?String(n):`${Math.round(n*100)}%`;
+      }
+      for(const check of this.querySelectorAll<HTMLInputElement>('[data-species]')) check.checked=values.species.includes(check.dataset.species as SharkKind);
+      for(const slider of this.querySelectorAll<HTMLInputElement>('[data-species-scale]')) {
+        const kind=slider.dataset.speciesScale as SharkKind;
+        slider.value=String(values.speciesScale[kind]); slider.disabled=!values.species.includes(kind);
+        const output=this.querySelector(`[data-scale-value="${kind}"]`); if(output) output.textContent=`${values.speciesScale[kind].toFixed(2)}×`;
+      }
+      const count=this.querySelector('[data-species-count]'); if(count) count.textContent=`${values.species.length} / 8 selected`;
+      for(const radio of this.querySelectorAll<HTMLInputElement>('[name="ocean-mode"]')) radio.checked=radio.value===this.mode;
+      const area=this.querySelector<HTMLTextAreaElement>('[data-export]'); if(area) area.value=exportOceanSettings();
+      const note=this.querySelector('[data-preview-mode]'); const viewport=this.compact.matches?'mobile':'desktop';
+      if(note) note.textContent=viewport===this.mode?`Previewing ${viewport} settings.`:`Editing ${this.mode}; resize the browser to preview. Current viewport: ${viewport}.`;
+    };
+  }
+  if(!customElements.get('ocean-tuner')) customElements.define('ocean-tuner',OceanTuner);
+</script>
+<style>
+  .ocean-tuner { display:block; position:relative; max-width:46rem; margin:1rem auto 4rem; padding:0 1.25rem; color:#334155; font-size:0.875rem; }
+  .tuner-shell { border:1px solid #cbd5e1; border-radius:0.625rem; background:#fff; }
+  summary { min-height:48px; padding:1rem; cursor:pointer; font-weight:600; }
+  summary span { font-size:0.7rem; font-weight:400; color:#64748b; margin-left:0.5rem; }
+  .tuner-body { padding:0 1rem 1rem; } p { margin:0 0 1rem; line-height:1.6; }
+  fieldset { border:0; padding:0; margin:1rem 0; min-width:0; } legend { margin-bottom:0.5rem; font-weight:500; }
+  .mode-picker { display:flex; gap:1rem; } .mode-picker label,.interactive { display:flex; align-items:center; gap:0.5rem; min-height:44px; }
+  .preview-note,small,.tuner-status { color:#64748b; font-size:0.75rem; }
+  .appearance-pickers,.slider-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-block:1rem; }
+  .appearance-pickers label,.slider-grid label { display:block; font-size:0.8125rem; min-width:0; } .wide { grid-column:1/-1; }
+  select { display:block; margin-top:0.5rem; min-height:44px; width:100%; background:#f8fafc; color:inherit; border:1px solid #cbd5e1; border-radius:0.375rem; padding:0.5rem; }
+  input[type=color] { display:block; width:100%; height:44px; margin-top:0.5rem; padding:3px; background:transparent; border:1px solid #cbd5e1; border-radius:0.375rem; }
+  output { float:right; font-family:var(--font-mono); font-size:0.75rem; } input[type=range] { display:block; width:100%; height:36px; accent-color:#64748b; cursor:pointer; } input[type=checkbox],input[type=radio] { accent-color:#64748b; }
+  small { display:block; line-height:1.5; } .tuner-group { border-top:1px solid #e2e8f0; margin-block:1rem; } .tuner-group summary { padding-inline:0; }
+  .species-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:center; min-height:48px; } .species-check { display:flex; gap:0.5rem; align-items:center; font-size:0.8125rem; } .species-scale { display:grid; grid-template-columns:minmax(0,1fr) 3rem; gap:0.5rem; align-items:center; }
+  .tuner-actions,.presets { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0; }
+  button { min-height:44px; padding:0.5rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.375rem; font-size:0.75rem; cursor:pointer; background:#f8fafc; } button:hover { border-color:#64748b; }
+  button:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible { outline:2px solid #64748b; outline-offset:3px; }
+  textarea { display:block; width:100%; resize:vertical; padding:0.75rem; margin:0.5rem 0 1rem; border:1px solid #cbd5e1; border-radius:0.375rem; background:#f8fafc; font-family:var(--font-mono); font-size:0.75rem; line-height:1.5; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  :global(.dark) .ocean-tuner { color:#cbd5e1; } :global(.dark) .tuner-shell { background:#020617; border-color:#334155; }
+  :global(.dark) button,:global(.dark) textarea,:global(.dark) select { background:#0f172a; border-color:#334155; color:#cbd5e1; }
+  :global(.dark) .tuner-group { border-color:#334155; } :global(.dark) .preview-note,:global(.dark) small,:global(.dark) .tuner-status,:global(.dark) summary span { color:#94a3b8; }
+  @media(max-width:480px) { .slider-grid,.appearance-pickers { grid-template-columns:1fr; } .species-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.5rem; } }
+  @media print { .ocean-tuner { display:none; } }
+</style>
+

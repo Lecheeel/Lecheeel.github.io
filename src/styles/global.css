@@ -16,6 +16,44 @@
   --color-accent-2: oklch(0.65 0.15 195);
 }
 
+/* A separate, feathered reading scrim keeps moving glyphs below the text. */
+main {
+  position: relative;
+  isolation: isolate;
+  --reading-scrim: 255 255 255;
+}
+.dark main { --reading-scrim: 2 6 23; }
+main::before {
+  content: "";
+  position: absolute;
+  inset: 0 -1rem;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to right,
+    transparent,
+    rgb(var(--reading-scrim) / var(--ocean-desktop-scrimOpacity, 0.92)) 2rem,
+    rgb(var(--reading-scrim) / var(--ocean-desktop-scrimOpacity, 0.92)) 50%,
+    rgb(var(--reading-scrim) / var(--ocean-desktop-scrimOpacity, 0.92)) calc(100% - 2rem),
+    transparent);
+}
+@media (max-width: 767px) {
+  main::before {
+    inset-inline: 0;
+    background: linear-gradient(to right,
+      rgb(var(--reading-scrim) / calc(var(--ocean-mobile-scrimOpacity, 0.78) * 0.5)),
+      rgb(var(--reading-scrim) / var(--ocean-mobile-scrimOpacity, 0.78)) 1.25rem,
+      rgb(var(--reading-scrim) / var(--ocean-mobile-scrimOpacity, 0.78)) calc(100% - 1.25rem),
+      rgb(var(--reading-scrim) / calc(var(--ocean-mobile-scrimOpacity, 0.78) * 0.5)));
+  }
+}
+@media print { main::before { display: none; } }
+
+.site-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+
 html {
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
