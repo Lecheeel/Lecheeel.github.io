@@ -24,12 +24,12 @@
       "thresher": 0.5,
       "nurse": 0.5
     },
-    "opacityLight": 0.5,
+    "opacityLight": 0.3,
     "opacityDark": 0.5,
     "scrimOpacity": 0.9,
     "centerVisibility": 0.5,
     "size": 1.2,
-    "speed": 1,
+    "speed": 0.8,
     "fishCount": 200,
     "species": ["zebra", "greathammer", "hammerhead", "classic"]
   },
