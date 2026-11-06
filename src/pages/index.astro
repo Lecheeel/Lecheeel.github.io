@@ -23,7 +23,7 @@ const jsonLd = JSON.stringify({
 
 <Base
   title="Lecheeel"
-  description="Software, embedded systems, and notes on what I build."
+  description="Embedded systems and software: FPGA control, ultrasonic phased arrays, PCB design, and Android internals."
 >
   <script is:inline type="application/ld+json" set:html={jsonLd} />
 
@@ -33,13 +33,21 @@ const jsonLd = JSON.stringify({
     </h1>
 
     <p class="mt-8 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
-      Hi, I'm Lecheeel. I build software and embedded systems. Recently,
-      I've been working on Android apps, AI tools, and self-hosted services.
+      Hi, I'm Lecheeel. I work on embedded systems and software, with a focus
+      on FPGA-based control, ultrasonic phased arrays, and Android internals.
     </p>
 
     <p class="mt-4 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
-      I share some of my projects here, along with notes on how they work
-      and what I've learned.
+      On the embedded side, I'm exploring FPGA-based multichannel phase synthesis, synchronized waveform generation, and acoustic field modeling for three-dimensional manipulation. My interests also include microcontroller firmware, multichannel driver circuits, and high-speed PCB layout, particularly differential pair routing, impedance control, and signal integrity.
+    </p>
+
+    <p class="mt-4 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+      On the software side, I'm studying Android internals through AOSP, framework services, Binder IPC, and HAL interfaces. Related interests include GNSS data processing, NMEA parsing, and Android's Generic Kernel Image (GKI), with attention to kernel modules, KMI compatibility, and how requests cross application, framework, and hardware boundaries.
+    </p>
+
+    <p class="mt-4 max-w-xl leading-relaxed text-slate-600 dark:text-slate-400">
+      I share selected projects and technical notes here, covering their design,
+      implementation, and experimental results.
     </p>
   </section>
 
